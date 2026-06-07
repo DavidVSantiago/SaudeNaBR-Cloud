@@ -75,8 +75,12 @@ new Elysia()
                 return "Não autorizado";
             }
         },
-        // GUARD 2 - validação de estrutura da mensagem recebida, deve ser string
-        body: t.String(),
+        // GUARD 2 - validação de estrutura da mensagem recebida, deve ser um objeto json
+        body: t.Object({
+            action: t.String(),
+            limit: t.Optional(t.Number()),
+            keys: t.Optional(t.Array(t.Any())) // Para o envio do ACK
+        }),
         // Timeout de ociosidade: encerra conexões zumbis (sem envio ou ping) após 60s
         idleTimeout: 60,
 
@@ -89,20 +93,10 @@ new Elysia()
         /* listener do recebimmento de mensagens */
         async message(ws, payload) {
 
-            // Garantir que o payload seja interpretado corretamente
-            let jsonPayload;
-            try {
-                jsonPayload = JSON.parse(payload.trim());
-            } catch (error) {
-                console.error("❌ Erro de Parse no payload:", error);
-                ws.send(JSON.stringify({ action: "ERROR", message: "Payload inválido: não é um JSON válido" }));
-                return;
-            }
-
             // AÇÃO 1: Servidor solicita dados (FETCH)
-            if (jsonPayload.action === "FETCH") {
+            if (payload.action === "FETCH") {
                 try {
-                    const limite = jsonPayload.limit || 500; // obtém o maximo de registro a serem enviados
+                    const limite = payload.limit || 500; // obtém o maximo de registro a serem enviados
                     console.log(`⏳ PC solicitou dados. Buscando lote de até ${limite} registros...`);
 
                     //await buscarLoteDeTelemetria(limite); // busca os dados 
@@ -121,9 +115,9 @@ new Elysia()
                 }
             }
             // AÇÃO 2: Servidor confirmou o recebimento e pede exclusão (ACK)
-            else if (jsonPayload.action === "ACK") {
+            else if (payload.action === "ACK") {
                 try {
-                    const chavesParaDeletar = jsonPayload.keys; // Array de {unixTs, idMotorista}
+                    const chavesParaDeletar = payload.keys; // Array de {unixTs, idMotorista}
 
                     if (chavesParaDeletar && chavesParaDeletar.length > 0) {
                         //await deletarLoteDeTelemetria(chavesParaDeletar);
@@ -137,7 +131,7 @@ new Elysia()
                     ws.send(JSON.stringify({ action: "ERROR", message: "Falha interna ao deletar lote" }));
                 }
             } else {
-                console.warn(`⚠️ Ação desconhecida recebida: ${jsonPayload.action}`);
+                console.warn(`⚠️ Ação desconhecida recebida: ${payload.action}`);
                 ws.send(JSON.stringify({ action: "ERROR", message: "Ação não reconhecida" }));
             }
         },
