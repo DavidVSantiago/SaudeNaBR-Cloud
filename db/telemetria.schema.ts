@@ -8,7 +8,7 @@ import { sqliteTable, integer, text, primaryKey } from "drizzle-orm/sqlite-core"
 export const telemetria = sqliteTable("telemetria", {
     unixTs: integer("unix_ts").notNull(),
     idMotorista: text("id_motorista").notNull(),
-    payload: text("payload").notNull(),
+    data: text("data").notNull(),
 }, (table) => [
     primaryKey({
         columns: [table.unixTs, table.idMotorista],

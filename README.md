@@ -17,4 +17,9 @@ Para debugar:
 bun run --inspect index.ts
 ```
 
+Para atualizar o banco DDL (alter table):
+```bash
+bunx drizzle-kit push
+```
+
 This project was created using `bun init` in bun v1.3.14. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
