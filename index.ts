@@ -1,5 +1,4 @@
 import { Elysia, t } from 'elysia'
-import { salvarTelemetria } from './db/telemetria.DAO'
 import { saveTelemetryRoutes } from './src/saveTelemetry';
 import { loadTelemetryRoutes } from './src/loadTelemetry';
 

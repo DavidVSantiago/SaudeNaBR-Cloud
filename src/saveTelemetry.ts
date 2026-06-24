@@ -21,7 +21,7 @@ export const saveTelemetryRoutes = new Elysia()
         body: t.String(),
 
         open(ws) {
-            console.log("📱 Dispositivo Android autenticado e conectado");
+            console.log(`[🔗 WS:${ws.id.slice(0, 6)}] 📱 Dispositivo Android conectado`);
             ws.send("OK"); // 2 bytes
         },
         async message(ws, payload) {
@@ -44,7 +44,7 @@ export const saveTelemetryRoutes = new Elysia()
             const bpm = Number(splitedPayload[2]);
             const vfc = Number(splitedPayload[3]);
             const spo2 = Number(splitedPayload[4]);
-            console.log(`[Motorista ${idMotorista} | ${timestamp}] BPM: ${bpm} | SpO2: ${spo2}% | VFC: ${vfc}ms`);
+            console.log(`[🔗 WS:${ws.id.slice(0, 6)} | Motorista ${idMotorista} | ${timestamp}] BPM: ${bpm} | SpO2: ${spo2}% | VFC: ${vfc}ms`);
 
 
             try {
@@ -52,11 +52,11 @@ export const saveTelemetryRoutes = new Elysia()
                 await salvarTelemetria({ unixTs, idMotorista, data: payload });
                 ws.send(`1,${unixTs}`); // ACK — cliente remove do banco local
             } catch (err) {
-                console.error("❌ Falha ao persistir telemetria:", err);
+                console.error(`[🔗 WS:${ws.id.slice(0, 6)}] ❌ Falha ao persistir telemetria:`, err);
                 ws.send(`0,${unixTs}`); // NACK — cliente mantém e reenvia
             }
         },
-        close() {
-            console.log("Cliente desconectado");
+        close(ws) {
+            console.log(`[❌ WS:${ws.id.slice(0, 6)}] Cliente desconectado`);
         }
     })
